@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Create Room{% endblock %}
+{% block content %}
+<section class="auth-shell">
+    <form class="form-card wide" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h1>Create study room</h1>
+        <label>Room name<input name="name" required></label>
+        <label>Subject<input name="subject" required></label>
+        <label>Description<textarea name="description" rows="4"></textarea></label>
+        <label>Capacity<input name="capacity" type="number" min="2" max="50" value="12"></label>
+        <label class="check"><input name="is_private" type="checkbox"> Private room</label>
+        <button class="button" type="submit">Create</button>
+    </form>
+</section>
+{% endblock %}

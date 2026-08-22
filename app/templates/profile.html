@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<section class="section-head">
+    <div>
+        <p class="eyebrow">Profile</p>
+        <h1>{{ current_user.username }}</h1>
+    </div>
+</section>
+
+<section class="metrics">
+    <div><strong>{{ total_minutes }}</strong><span>Total study minutes</span></div>
+    <div><strong>{{ sessions|length }}</strong><span>Completed sessions</span></div>
+    <div><strong>{{ current_user.role }}</strong><span>Account type</span></div>
+</section>
+
+<section class="grid two">
+    <form class="form-card wide" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h2>Account settings</h2>
+        <label>Username<input name="username" value="{{ current_user.username }}" required></label>
+        <label>Email<input name="email" type="email" value="{{ current_user.email }}" required></label>
+        <label>Current password<input name="current_password" type="password"></label>
+        <label>New password<input name="new_password" type="password"></label>
+        <button class="button" type="submit">Save profile</button>
+    </form>
+    <div class="tool-block">
+        <h2>Recent study sessions</h2>
+        <ul class="file-list">
+            {% for session in sessions[:10] %}
+                <li><span>{{ session.duration_minutes }} minutes</span><span>{{ session.ended_at.strftime('%d %b, %H:%M') }}</span></li>
+            {% else %}
+                <li class="empty">Complete a focus timer to record your first session.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<section class="section-head">
+    <div>
+        <p class="eyebrow">Admin</p>
+        <h1>Platform control</h1>
+    </div>
+</section>
+<section class="metrics">
+    <div><strong>{{ users|length }}</strong><span>Users</span></div>
+    <div><strong>{{ rooms|length }}</strong><span>Rooms</span></div>
+    <div><strong>{{ files|length }}</strong><span>Recent files</span></div>
+</section>
+<section class="grid two">
+    <div class="tool-block">
+        <h2>Rooms</h2>
+        {% for room in rooms %}
+            <article class="admin-row">
+                <span>{{ room.name }}</span>
+                <form method="post" action="{{ url_for('admin.delete_room', room_id=room.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit">Delete</button>
+                </form>
+            </article>
+        {% endfor %}
+    </div>
+    <div class="tool-block">
+        <h2>Users</h2>
+        {% for user in users %}
+            <article class="admin-row">
+                <span>{{ user.username }}</span>
+                <small>{{ user.role }}</small>
+                {% if user.id != current_user.id %}
+                    <form method="post" action="{{ url_for('admin.set_user_role', user_id=user.id, role='admin' if user.role != 'admin' else 'student') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">{{ "Make student" if user.role == "admin" else "Make admin" }}</button>
+                    </form>
+                    <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Delete</button>
+                    </form>
+                {% endif %}
+            </article>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

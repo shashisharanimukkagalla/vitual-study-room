@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ room.name }}{% endblock %}
+{% block head %}
+<script src="https://meet.jit.si/external_api.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+{% endblock %}
+{% block content %}
+<section class="room-header">
+    <div>
+        <p class="eyebrow">{{ room.subject }} · Code {{ room.invite_code }}</p>
+        <h1>{{ room.name }}</h1>
+        <p>{{ room.description or "A focused room for shared study." }}</p>
+    </div>
+    <div class="actions">
+        {% if current_user.is_admin or room.created_by_id == current_user.id %}
+            <form method="post" action="{{ url_for('rooms.delete', room_id=room.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="button danger" type="submit">Delete room</button>
+            </form>
+        {% endif %}
+        <form method="post" action="{{ url_for('rooms.leave', room_id=room.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="button ghost" type="submit">Leave</button>
+        </form>
+    </div>
+</section>
+
+<section class="study-layout" data-room-id="{{ room.id }}" data-jitsi-name="{{ room.jitsi_name }}" data-user="{{ current_user.username }}">
+    <input type="hidden" id="csrf-token" value="{{ csrf_token() }}">
+    <div class="video-panel">
+        <div id="jitsi-meet"></div>
+    </div>
+    <aside class="side-panel">
+        <section class="tool-block timer-block">
+            <h2>Focus timer</h2>
+            <div id="timer-display">25:00</div>
+            <div class="timer-controls">
+                <button class="button small" data-minutes="25">25</button>
+                <button class="button small" data-minutes="50">50</button>
+                <button class="button small ghost" id="timer-start">Start</button>
+                <button class="button small ghost" id="timer-pause">Pause</button>
+                <button class="button small ghost" id="timer-reset">Reset</button>
+            </div>
+        </section>
+
+        <section class="tool-block chat-block">
+            <h2>Room chat</h2>
+            <div id="messages">
+                {% for message in messages %}
+                    <p><strong>{{ message.user.username }}</strong> <span>{{ message.created_at.strftime('%H:%M') }}</span><br>{{ message.content }}</p>
+                {% endfor %}
+            </div>
+            <form id="chat-form">
+                <input id="chat-input" placeholder="Type a message" autocomplete="off">
+                <button class="button small" type="submit">Send</button>
+            </form>
+        </section>
+    </aside>
+</section>
+
+<section class="grid two room-tools">
+    <div class="tool-block">
+        <h2>Your tasks</h2>
+        <form class="inline-form" method="post" action="{{ url_for('tasks.add', room_id=room.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input name="title" placeholder="Add a study task" required>
+            <button class="button" type="submit">Add</button>
+        </form>
+        <ul class="task-list">
+            {% for task in tasks %}
+                <li class="{% if task.is_completed %}done{% endif %}">
+                    <form method="post" action="{{ url_for('tasks.toggle', task_id=task.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">{{ "Done" if task.is_completed else "Mark" }}</button>
+                    </form>
+                    <span>{{ task.title }}</span>
+                    <form method="post" action="{{ url_for('tasks.delete', task_id=task.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">Delete</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="empty">No tasks yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="tool-block">
+        <h2>Shared files</h2>
+        <form class="inline-form" method="post" enctype="multipart/form-data" action="{{ url_for('files.upload', room_id=room.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="file" name="file" required>
+            <button class="button" type="submit">Upload</button>
+        </form>
+        <ul class="file-list">
+            {% for file in files %}
+                <li>
+                    <a href="{{ url_for('files.download', file_id=file.id) }}">{{ file.original_filename }}</a>
+                    <span>{{ file.user.username }}</span>
+                    {% if current_user.is_admin or room.created_by_id == current_user.id or file.user_id == current_user.id %}
+                        <form method="post" action="{{ url_for('files.delete', file_id=file.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit">Delete</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li class="empty">No files shared yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+<script src="{{ url_for('static', filename='js/room.js') }}"></script>
+{% endblock %}

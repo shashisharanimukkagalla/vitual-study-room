@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="section-head">
+    <div>
+        <p class="eyebrow">Dashboard</p>
+        <h1>Hello, {{ current_user.username }}</h1>
+    </div>
+    <a class="button" href="{{ url_for('rooms.create_room') }}">Create room</a>
+</section>
+
+<section class="metrics">
+    <div><strong>{{ my_rooms|length }}</strong><span>Joined rooms</span></div>
+    <div><strong>{{ total_minutes }}</strong><span>Total study minutes</span></div>
+    <div><strong>{{ today.strftime('%d %b %Y') }}</strong><span>Today</span></div>
+</section>
+
+<section class="grid two">
+    <div>
+        <h2>Your rooms</h2>
+        <div class="card-list">
+            {% for room in my_rooms %}
+                {% include "rooms/_room_card.html" %}
+            {% else %}
+                <p class="empty">You have not joined any rooms yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div>
+        <h2>Notifications</h2>
+        <div class="card-list compact">
+            {% for notification in notifications %}
+                <article class="notice {% if notification.is_read %}read{% endif %}">
+                    <span>{{ notification.message }}</span>
+                    {% if not notification.is_read %}
+                        <form method="post" action="{{ url_for('main.mark_notification_read', notification_id=notification.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="link-button" type="submit">Mark read</button>
+                        </form>
+                    {% endif %}
+                </article>
+            {% else %}
+                <p class="empty">No notifications yet.</p>
+            {% endfor %}
+        </div>
+        <h2>Join by invite</h2>
+        <form class="inline-form" method="post" action="{{ url_for('rooms.join_by_code') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input name="invite_code" placeholder="Invite code" required>
+            <button class="button" type="submit">Join</button>
+        </form>
+        <h2>Public rooms</h2>
+        <div class="card-list">
+            {% for room in public_rooms %}
+                {% include "rooms/_room_card.html" %}
+            {% else %}
+                <p class="empty">No public rooms yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

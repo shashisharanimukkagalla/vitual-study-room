@@ -1,0 +1,8 @@
+<article class="room-card">
+    <div>
+        <h3>{{ room.name }}</h3>
+        <p>{{ room.subject }} · {{ room.member_count }}/{{ room.capacity }} members</p>
+        <small>Code: {{ room.invite_code }}</small>
+    </div>
+    <a class="button small" href="{{ url_for('rooms.detail', room_id=room.id) }}">Open</a>
+</article>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Rooms{% endblock %}
+{% block content %}
+<section class="section-head">
+    <div>
+        <p class="eyebrow">Study rooms</p>
+        <h1>Find a room</h1>
+    </div>
+    <a class="button" href="{{ url_for('rooms.create_room') }}">Create room</a>
+</section>
+<div class="card-list">
+    {% for room in rooms %}
+        {% include "rooms/_room_card.html" %}
+    {% else %}
+        <p class="empty">No rooms have been created.</p>
+    {% endfor %}
+</div>
+{% endblock %}
